@@ -332,16 +332,10 @@ class CTRModelWinning(nn.Module):
         auc = self.compute_auc(torch.cat(all_preds), torch.cat(all_labels))
         return avg_loss, auc
     
-    def fit(self, train_loader, valid_loader, num_epochs=20, save_path=None):
+    def fit(self, train_loader, valid_loader, num_epochs=20, start_epoch=0, save_path=None):
         """Train with the exact hyperparameters from winning solution."""
         
         # Calculate pos_weight
-        all_labels = []
-        # for batch in tqdm(train_loader, desc="Computing pos_weight"):
-        #     all_labels.extend(batch["labels"].cpu().numpy())
-        
-        # pos_rate = np.mean(all_labels)
-        # pos_weight = (1 - pos_rate) / pos_rate
         pos_weight = 3.0000
         self.criterion = nn.BCEWithLogitsLoss(pos_weight=torch.tensor(pos_weight).to(device))
         print(f"Pos weight: {pos_weight:.4f}\n")
@@ -350,9 +344,9 @@ class CTRModelWinning(nn.Module):
         patience = 5
         patience_counter = 0
         
-        for epoch in range(num_epochs):
+        for epoch in range(start_epoch, start_epoch + num_epochs):
             print(f"\n{'='*70}")
-            print(f"EPOCH {epoch+1}/{num_epochs}")
+            print(f"EPOCH {epoch+1}/{start_epoch + num_epochs}")
             print(f"{'='*70}")
             
             tr_loss, tr_auc = self.train_epoch(train_loader)
@@ -370,7 +364,13 @@ class CTRModelWinning(nn.Module):
                 best_auc = val_auc
                 patience_counter = 0
                 if save_path:
-                    torch.save(self.state_dict(), save_path)
+                    torch.save({
+                        'model': self.state_dict(),
+                        'optimizer': self.optimizer.state_dict(),
+                        'scheduler': self.scheduler.state_dict(),
+                        'epoch': epoch,
+                        'val_auc': val_auc,
+                    }, f"{save_path}_{epoch}.pth")
                     print(f"✓ Saved (AUC: {val_auc:.4f})")
             else:
                 patience_counter += 1
@@ -401,7 +401,6 @@ embeddings, item_tags, num_items, num_tags = load_item_embeddings_and_tags(
     item_info_path="/content/item_info_with_clip.parquet",
     embedding_source="item_clip_emd128"
 )
-
 model = CTRModelWinning(
     num_items=num_items,
     frozen_embeddings=embeddings,
@@ -418,4 +417,10 @@ model = CTRModelWinning(
     learning_rate=5e-4, 
 )
 
-model.fit(train_loader, valid_loader, num_epochs=20, save_path="best_model.pth")
+model.fit(
+    train_loader, 
+    valid_loader, 
+    num_epochs=20,
+    start_epoch=0, 
+    save_path="model"
+)
