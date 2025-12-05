@@ -35,7 +35,6 @@ class EmbeddingLayer(nn.Module):
         self.tag_emb.weight.data[0] = 0
         
         # Final embedding dim = frozen (128) + learnable (64) + tags (16) = 208
-        # But we'll project to fixed dimension
         self.final_dim = embed_dim + 128 + tag_embed_dim
     
     def forward(self, item_ids):
@@ -169,9 +168,7 @@ class DCNv2(nn.Module):
         # Concatenate
         return torch.cat([x_cross, x_deep], dim=1)
 
-class CTRModelWinning(nn.Module):
-    """Exact 1st place solution architecture."""
-    
+class CTRModel(nn.Module):    
     def __init__(
         self,
         num_items,
@@ -401,7 +398,7 @@ embeddings, item_tags, num_items, num_tags = load_item_embeddings_and_tags(
     item_info_path="/content/item_info_with_clip.parquet",
     embedding_source="item_clip_emd128"
 )
-model = CTRModelWinning(
+model = CTRModel(
     num_items=num_items,
     frozen_embeddings=embeddings,
     item_tags=item_tags,
@@ -417,10 +414,24 @@ model = CTRModelWinning(
     learning_rate=5e-4, 
 )
 
+checkpoint = torch.load("/kaggle/working/model_0.pth", weights_only=False, map_location='cuda')
+# Load saved state
+model.load_state_dict(checkpoint['model'], strict=False)
+model.optimizer.load_state_dict(checkpoint['optimizer'])
+model.scheduler.load_state_dict(checkpoint['scheduler'])
+
+start_epoch = checkpoint['epoch'] 
+print(f"Loaded checkpoint from epoch {checkpoint['epoch']}")
+print(f"Resuming training from epoch {start_epoch}")
+
+# Resume training
+num_remaining_epochs = 20 - start_epoch
+print(f"Training for {num_remaining_epochs} more epochs\n")
+
 model.fit(
     train_loader, 
     valid_loader, 
-    num_epochs=20,
-    start_epoch=0, 
+    num_epochs=num_remaining_epochs,
+    start_epoch=start_epoch, 
     save_path="model"
 )
