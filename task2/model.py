@@ -396,7 +396,7 @@ from model_loader import load_item_embeddings_and_tags
 # Load data
 embeddings, item_tags, num_items, num_tags = load_item_embeddings_and_tags(
     item_info_path="/content/item_info_with_clip.parquet",
-    embedding_source="item_clip_emd128"
+    embedding_source="item_emb_d128"
 )
 model = CTRModel(
     num_items=num_items,
