@@ -418,4 +418,4 @@ model = CTRModelWinning(
     learning_rate=5e-4,  
 )
 
-model.fit(train_loader, valid_loader, num_epochs=20, save_path="best_model.pth")
+model.fit(train_loader, valid_loader, num_epochs=40, save_path="best_model.pth")
