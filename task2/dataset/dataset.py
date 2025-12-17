@@ -1,7 +1,8 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
 import polars as pl
-
+import sys 
+sys.path.append("/kaggle/working/recommender_CTR")
 class Task2Dataset(Dataset):
     """
     Dataset for CTR prediction task.

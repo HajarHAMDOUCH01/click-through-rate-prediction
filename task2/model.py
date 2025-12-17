@@ -8,7 +8,8 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from sklearn.metrics import roc_auc_score
 import numpy as np
 from tqdm import tqdm
-
+import sys 
+sys.path.append("/kaggle/working/recommender_CTR")
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 class EmbeddingLayer(nn.Module):

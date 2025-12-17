@@ -2,7 +2,8 @@ import numpy as np
 import polars as pl
 import torch
 from typing import Tuple
-
+import sys 
+sys.path.append("/kaggle/working/recommender_CTR")
 def load_item_embeddings_and_tags(
     item_info_path: str,
     embedding_source: str = "item_clip_emb_d128"
