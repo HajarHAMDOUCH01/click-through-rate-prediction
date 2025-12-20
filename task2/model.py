@@ -408,12 +408,12 @@ model = CTRModelWinning(
     embed_dim=64,  
     tag_embed_dim=16,  
     k=16,  
-    num_transformer_layers=2,  
+    num_transformer_layers=1,  
     num_heads=2,
-    num_cross_layers=2,  
-    deep_layers=[1024, 512, 256],  
+    num_cross_layers=1,  
+    deep_layers=[512, 256, 128],  
     dropout=0.3,  
-    learning_rate=5e-5,  
+    learning_rate=5e-4,  
 )
 
 model.fit(train_loader, valid_loader, num_epochs=40, save_path="best_model")
