@@ -127,7 +127,7 @@ class DCNv2(nn.Module):
     Deep & Cross Network v2 for feature interaction.
     """
     
-    def __init__(self, input_dim, num_cross_layers=3, deep_layers=None, dropout=0.2):
+    def __init__(self, input_dim, num_cross_layers=3, deep_layers=None, dropout=0.5):
         super().__init__()
         
         if deep_layers is None:
@@ -187,7 +187,7 @@ class CTRModelWinning(nn.Module):
         num_heads=4,
         num_cross_layers=3,
         deep_layers=None,
-        dropout=0.2,
+        dropout=0.5,
         learning_rate=5e-4,
     ):
         super().__init__()
@@ -411,8 +411,8 @@ model = CTRModelWinning(
     num_transformer_layers=2,  
     num_heads=4,
     num_cross_layers=3,  
-    deep_layers=[1024, 512, 256],  
-    dropout=0.2,  
+    deep_layers=[512, 256],  
+    dropout=0.5,  
     learning_rate=5e-4,  
 )
 
