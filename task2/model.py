@@ -409,9 +409,9 @@ model = CTRModelWinning(
     tag_embed_dim=16,  
     k=16,  
     num_transformer_layers=2,  
-    num_heads=4,
+    num_heads=2,
     num_cross_layers=3,  
-    deep_layers=[512, 256],  
+    deep_layers=[256, 128],  
     dropout=0.5,  
     learning_rate=5e-4,  
 )
