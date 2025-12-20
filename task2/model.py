@@ -134,10 +134,10 @@ class DCNv2(nn.Module):
             deep_layers = [1024, 512, 256]
         
         # Cross layers
-        self.cross_layers = nn.ModuleList([
-            nn.Linear(input_dim, input_dim, bias=True)
-            for _ in range(num_cross_layers)
-        ])
+        # self.cross_layers = nn.ModuleList([
+        #     nn.Linear(input_dim, input_dim, bias=True)
+        #     for _ in range(num_cross_layers)
+        # ])
         
         # Deep network
         layers = []
@@ -148,9 +148,9 @@ class DCNv2(nn.Module):
             layers.append(nn.Dropout(dropout))
             in_dim = h_dim
         self.deep_net = nn.Sequential(*layers)
-        
+        self.output_dim = deep_layers[-1]
         # Output concatenation
-        self.output_dim = input_dim + deep_layers[-1]
+        # self.output_dim = input_dim + deep_layers[-1]
     
     def forward(self, x0):
         """
@@ -161,15 +161,15 @@ class DCNv2(nn.Module):
             output: (B, output_dim)
         """
         # Cross path
-        x_cross = x0
-        for layer in self.cross_layers:
-            x_cross = x0 * layer(x_cross) + x_cross
+        # x_cross = x0
+        # for layer in self.cross_layers:
+        #     x_cross = x0 * layer(x_cross) + x_cross
         
         # Deep path
         x_deep = self.deep_net(x0)
-        
+        return x_deep
         # Concatenate
-        return torch.cat([x_cross, x_deep], dim=1)
+        # return torch.cat([x_cross, x_deep], dim=1)
 
 class CTRModelWinning(nn.Module):
     """Exact 1st place solution architecture."""
@@ -233,8 +233,6 @@ class CTRModelWinning(nn.Module):
         # Info
         trainable = sum(p.numel() for p in self.parameters() if p.requires_grad)
         print(f"\n{'='*70}")
-        print(f"CTR Model: 1st Place WWW 2025 Solution")
-        print(f"{'='*70}")
         print(f"Trainable params: {trainable:,}")
         print(f"Item embedding dim: {item_emb_dim}")
         print(f"Seq output dim: {self.seq_learning.output_dim}")
@@ -334,8 +332,7 @@ class CTRModelWinning(nn.Module):
         auc = self.compute_auc(torch.cat(all_preds), torch.cat(all_labels))
         return avg_loss, auc
     
-    def fit(self, train_loader, valid_loader, num_epochs=20, start_epoch=0, save_path=None):
-        """Train with the exact hyperparameters from winning solution."""
+    def fit(self, train_loader, valid_loader, num_epochs=40, start_epoch=0, save_path=None):
         
         # Calculate pos_weight
         pos_weight = 3.0000
