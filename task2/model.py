@@ -73,7 +73,7 @@ class SequentialLearning(nn.Module):
         encoder_layer = TransformerEncoderLayer(
             d_model=item_embed_dim * 2,  # Concatenate item + target
             nhead=num_heads,
-            dim_feedforward=512,
+            dim_feedforward=256,
             batch_first=True,
             dropout=dropout,
             activation='relu'
@@ -405,7 +405,7 @@ model = CTRModelWinning(
     frozen_embeddings=embeddings,
     item_tags=item_tags,
     num_tags=num_tags,
-    embed_dim=64,  
+    embed_dim=32,  
     tag_embed_dim=16,  
     k=16,  
     num_transformer_layers=1,  
