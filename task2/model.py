@@ -161,15 +161,15 @@ class DCNv2(nn.Module):
             output: (B, output_dim)
         """
         # Cross path
-        # x_cross = x0
-        # for layer in self.cross_layers:
-        #     x_cross = x0 * layer(x_cross) + x_cross
+        x_cross = x0
+        for layer in self.cross_layers:
+            x_cross = x0 * layer(x_cross) + x_cross
         
         # Deep path
         x_deep = self.deep_net(x0)
-        return x_deep
+        # return x_deep
         # Concatenate
-        # return torch.cat([x_cross, x_deep], dim=1)
+        return torch.cat([x_cross, x_deep], dim=1)
 
 class CTRModelWinning(nn.Module):
     """Exact 1st place solution architecture."""
@@ -410,9 +410,9 @@ model = CTRModelWinning(
     k=16,  
     num_transformer_layers=2,  
     num_heads=2,
-    num_cross_layers=3,  
-    deep_layers=[256, 128],  
-    dropout=0.5,  
+    num_cross_layers=2,  
+    deep_layers=[1024, 512, 256],  
+    dropout=0.3,  
     learning_rate=5e-5,  
 )
 
