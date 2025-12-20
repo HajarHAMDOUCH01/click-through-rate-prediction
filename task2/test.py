@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 import sys
-sys.path.append("/content/recommender_CTR")
+sys.path.append("/kaggle/working/recommender_CTR")
 
 from task2.model import CTRModel
 from task2.dataset.dataset import Task2Dataset, collate_fn
