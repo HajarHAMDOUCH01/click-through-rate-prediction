@@ -15,7 +15,7 @@ from task2.model_loader import load_item_embeddings_and_tags
 TEST_DATA_PATH = "/kaggle/input/www2025-mmctr-data/MicroLens_1M_MMCTR/MicroLens_1M_x1/test.parquet"
 ITEM_INFO_PATH = "/kaggle/working/item_info_with_clip.parquet"
 MODEL_PATH = "/kaggle/working/model_21.pth"
-OUTPUT_PATH = "/kaggle/working/predictions.csv"
+OUTPUT_PATH = "/kaggle/working/prediction.csv"
 BATCH_SIZE = 256
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
