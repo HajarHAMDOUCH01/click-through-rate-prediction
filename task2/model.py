@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
 from torch.nn import TransformerEncoderLayer, TransformerEncoder
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -9,8 +8,8 @@ from sklearn.metrics import roc_auc_score
 import numpy as np
 from tqdm import tqdm
 
-import sys
-sys.path.append("/kaggle/working/recommender_CTR")
+import sys 
+sys.path.append("/kaggle/working/RS_competition")
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -232,6 +231,8 @@ class CTRModelWinning(nn.Module):
         # Info
         trainable = sum(p.numel() for p in self.parameters() if p.requires_grad)
         print(f"\n{'='*70}")
+        print(f"CTR Model: 1st Place WWW 2025 Solution")
+        print(f"{'='*70}")
         print(f"Trainable params: {trainable:,}")
         print(f"Item embedding dim: {item_emb_dim}")
         print(f"Seq output dim: {self.seq_learning.output_dim}")
@@ -368,7 +369,7 @@ class CTRModelWinning(nn.Module):
                         'scheduler': self.scheduler.state_dict(),
                         'epoch': epoch,
                         'val_auc': val_auc,
-                    }, f"/content/drive/MyDrive/model_MMCTR_{epoch}.pth")
+                    }, f"/kaggle/working/model_MMCTR_{epoch}.pth")
                     print(f"✓ Saved (AUC: {val_auc:.4f})")
             else:
                 patience_counter += 1
