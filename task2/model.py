@@ -27,11 +27,10 @@ class EmbeddingLayer(nn.Module):
         self.tag_emb = nn.Embedding(num_tags, tag_embed_dim, padding_idx=0)
         
         # Initialize
-        # Xavier/Kaiming initialization
-        nn.init.xavier_uniform_(self.item_emb.weight)
-        self.item_emb.weight.data[0] = 0  # Keep padding as zero
-
-        nn.init.xavier_uniform_(self.tag_emb.weight)
+        nn.init.uniform_(self.item_emb.weight, -0.05, 0.05)
+        self.item_emb.weight.data[0] = 0
+        
+        nn.init.uniform_(self.tag_emb.weight, -0.05, 0.05)
         self.tag_emb.weight.data[0] = 0
         
         # Final embedding dim = frozen (128) + learnable (64) + tags (16) = 208
@@ -391,14 +390,14 @@ class CTRModelWinning(nn.Module):
 
 
 
-from task2.dataset.dataset import Task2Dataset, collate_fn
+from task2.dataset.dataset import Task2Dataset, collate_fn_train, collate_fn_val
 from task2.model_loader import load_item_embeddings_and_tags
 # Load data
 train_dataset = Task2Dataset(data_path="/kaggle/input/www2025-mmctr-data/MicroLens_1M_MMCTR/MicroLens_1M_x1/train.parquet", is_train=True)
 valid_dataset = Task2Dataset(data_path="/kaggle/input/www2025-mmctr-data/MicroLens_1M_MMCTR/MicroLens_1M_x1/valid.parquet", is_train=True)
 
-train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, collate_fn=collate_fn)
-valid_loader = DataLoader(valid_dataset, batch_size=128, shuffle=False, collate_fn=collate_fn)
+train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True, collate_fn=lambda b: collate_fn_train(b, mask_prob=0.2))
+valid_loader = DataLoader(valid_dataset, batch_size=128, shuffle=False, collate_fn=collate_fn_val)
 
 # Create model
 
