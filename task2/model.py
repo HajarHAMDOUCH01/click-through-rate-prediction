@@ -234,7 +234,7 @@ class CTRModelWinning(nn.Module):
         
         # Optimizer
         self.optimizer = Adam(self.parameters(), lr=learning_rate, weight_decay=1e-5)
-        self.scheduler = ReduceLROnPlateau(self.optimizer, mode='max', factor=0.5, patience=3)
+        self.scheduler = ReduceLROnPlateau(self.optimizer, mode='max', factor=0.2, patience=1)
         self.criterion = None
         
         # Info
@@ -412,15 +412,15 @@ model = CTRModelWinning(
     frozen_embeddings=embeddings,
     item_tags=item_tags,
     num_tags=num_tags,
-    embed_dim=64,          
+    embed_dim=128,          
     tag_embed_dim=8,       
     k=16,                   
     num_transformer_layers=2,
-    num_heads=1,
+    num_heads=2,
     num_cross_layers=0,    
-    deep_layers=[256],     
+    deep_layers=[256, 128],     
     dropout=0.4,           
-    learning_rate=5e-4,     
+    learning_rate=5e-5,     
 )
 
 model.fit(train_loader, valid_loader, num_epochs=40, save_path="best_model")
