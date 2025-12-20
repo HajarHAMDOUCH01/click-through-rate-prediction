@@ -133,13 +133,13 @@ task2_predictions = all_predictions
 
 # Create dataframe
 submission_df = pl.DataFrame({
-    "id": all_ids,
-    "task1": task1_predictions,
-    "task2": task2_predictions
+    "ID": all_ids,
+    "Task1": task1_predictions,
+    "Task2": task2_predictions
 })
 
-# Sort by id
-submission_df = submission_df.sort("id")
+# Sort by ID
+submission_df = submission_df.sort("ID")
 
 # Save to CSV
 submission_df.write_csv(OUTPUT_PATH)
