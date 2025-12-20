@@ -379,63 +379,63 @@ class CTRModel(nn.Module):
 
 
 
-from torch.utils.data import DataLoader
-from task2.dataset.dataset import Task2Dataset, collate_fn
-from task2.model_loader import load_item_embeddings_and_tags
+# from torch.utils.data import DataLoader
+# from task2.dataset.dataset import Task2Dataset, collate_fn
+# from task2.model_loader import load_item_embeddings_and_tags
 
-# Load data
-train_dataset = Task2Dataset(data_path="/kaggle/input/www2025-mmctr-data/MicroLens_1M_MMCTR/MicroLens_1M_x1/train.parquet", is_train=True)
-valid_dataset = Task2Dataset(data_path="/kaggle/input/www2025-mmctr-data/MicroLens_1M_MMCTR/MicroLens_1M_x1/valid.parquet", is_train=True)
+# # Load data
+# train_dataset = Task2Dataset(data_path="/kaggle/input/www2025-mmctr-data/MicroLens_1M_MMCTR/MicroLens_1M_x1/train.parquet", is_train=True)
+# valid_dataset = Task2Dataset(data_path="/kaggle/input/www2025-mmctr-data/MicroLens_1M_MMCTR/MicroLens_1M_x1/valid.parquet", is_train=True)
 
-train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, collate_fn=collate_fn)
-valid_loader = DataLoader(valid_dataset, batch_size=128, shuffle=False, collate_fn=collate_fn)
+# train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, collate_fn=collate_fn)
+# valid_loader = DataLoader(valid_dataset, batch_size=128, shuffle=False, collate_fn=collate_fn)
 
-# Create model
+# # Create model
 
-# Load data
-embeddings, item_tags, num_items, num_tags = load_item_embeddings_and_tags(
-    item_info_path="/kaggle/working/item_info_with_clip.parquet",
-    embedding_source="item_clip_emb_d128"
-)
+# # Load data
+# embeddings, item_tags, num_items, num_tags = load_item_embeddings_and_tags(
+#     item_info_path="/kaggle/working/item_info_with_clip.parquet",
+#     embedding_source="item_clip_emb_d128"
+# )
 
-checkpoint = torch.load("/kaggle/working/model_21.pth", weights_only=False, map_location='cuda')
+# checkpoint = torch.load("/kaggle/working/model_21.pth", weights_only=False, map_location='cuda')
 
 
-model = CTRModel(
-    num_items=num_items,
-    frozen_embeddings=embeddings,
-    item_tags=item_tags,
-    num_tags=num_tags,
-    embed_dim=64,  # Exact
-    tag_embed_dim=16,  # Exact
-    k=16,  # Exact
-    num_transformer_layers=2,  # Exact
-    num_heads=4,
-    num_cross_layers=3,  # Exact
-    deep_layers=[1024, 512, 256],  # Exact
-    dropout=0.2,  # Exact
-    learning_rate=5e-4,  # Exact
-)
+# model = CTRModel(
+#     num_items=num_items,
+#     frozen_embeddings=embeddings,
+#     item_tags=item_tags,
+#     num_tags=num_tags,
+#     embed_dim=64,  # Exact
+#     tag_embed_dim=16,  # Exact
+#     k=16,  # Exact
+#     num_transformer_layers=2,  # Exact
+#     num_heads=4,
+#     num_cross_layers=3,  # Exact
+#     deep_layers=[1024, 512, 256],  # Exact
+#     dropout=0.2,  # Exact
+#     learning_rate=5e-4,  # Exact
+# )
 
-# Load saved state
-model.load_state_dict(checkpoint['model'], strict=False)
-model.optimizer.load_state_dict(checkpoint['optimizer'])
-model.scheduler.load_state_dict(checkpoint['scheduler'])
+# # Load saved state
+# model.load_state_dict(checkpoint['model'], strict=False)
+# model.optimizer.load_state_dict(checkpoint['optimizer'])
+# model.scheduler.load_state_dict(checkpoint['scheduler'])
 
-start_epoch = checkpoint['epoch'] 
-print(f"Loaded checkpoint from epoch {checkpoint['epoch']}")
-print(f"Resuming training from epoch {start_epoch}")
+# start_epoch = checkpoint['epoch'] 
+# print(f"Loaded checkpoint from epoch {checkpoint['epoch']}")
+# print(f"Resuming training from epoch {start_epoch}")
 
-# Resume training
-num_remaining_epochs = 50 - start_epoch
-print(f"Training for {num_remaining_epochs} more epochs\n")
+# # Resume training
+# num_remaining_epochs = 50 - start_epoch
+# print(f"Training for {num_remaining_epochs} more epochs\n")
 
-model.fit(
-    train_loader, 
-    valid_loader, 
-    num_epochs=num_remaining_epochs,
-    start_epoch=start_epoch, 
-    save_path="model"
-)
+# model.fit(
+#     train_loader, 
+#     valid_loader, 
+#     num_epochs=num_remaining_epochs,
+#     start_epoch=start_epoch, 
+#     save_path="model"
+# )
 
 

@@ -122,7 +122,7 @@ if __name__ == "__main__":
     checkpoint = torch.load(checkpoint_path, weights_only=False, map_location=device)
     model.load_state_dict(checkpoint['model'], strict=False)
     
-    print(f"Loaded checkpoint from epoch {checkpoint['epoch']}")
+    print(f"Loaded model from epoch {checkpoint['epoch']}")
     print(f"Validation AUC: {checkpoint.get('val_auc', 'N/A'):.4f}\n")
     
     # Generate predictions
