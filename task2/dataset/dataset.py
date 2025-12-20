@@ -40,30 +40,8 @@ class Task2Dataset(Dataset):
         return item
 
 
-def collate_fn_train(batch, mask_prob=0.15):
-    """Training collate with augmentation."""
-    labels = torch.tensor([item["label"] for item in batch], dtype=torch.float32)
-    item_seqs = torch.tensor([item["item_seq"] for item in batch], dtype=torch.long)
-    
-    # Random masking
-    keep_mask = torch.rand_like(item_seqs, dtype=torch.float32) > mask_prob
-    padding_mask = (item_seqs == 0)
-    keep_mask = keep_mask | padding_mask
-    item_seqs = item_seqs * keep_mask.long()
-    
-    collated = {
-        "user_ids": torch.tensor([item["user_id"] for item in batch], dtype=torch.long),
-        "item_seqs": item_seqs,
-        "item_ids": torch.tensor([item["item_id"] for item in batch], dtype=torch.long),
-        "likes_levels": torch.tensor([item["likes_level"] for item in batch], dtype=torch.float32),
-        "views_levels": torch.tensor([item["views_level"] for item in batch], dtype=torch.float32),
-        "labels": labels
-    }
-    return collated
-
-
-def collate_fn_val(batch):
-    """Validation collate without augmentation."""
+def collate_fn(batch):
+    """Collate function that handles both labeled and unlabeled data."""
     labels = torch.tensor([item["label"] for item in batch], dtype=torch.float32)
     collated = {
         "user_ids": torch.tensor([item["user_id"] for item in batch], dtype=torch.long),
@@ -73,4 +51,5 @@ def collate_fn_val(batch):
         "views_levels": torch.tensor([item["views_level"] for item in batch], dtype=torch.float32),
         "labels": labels
     }
+    
     return collated

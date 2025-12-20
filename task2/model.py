@@ -390,14 +390,14 @@ class CTRModelWinning(nn.Module):
 
 
 
-from task2.dataset.dataset import Task2Dataset, collate_fn_train, collate_fn_val
+from task2.dataset.dataset import Task2Dataset, collate_fn
 from task2.model_loader import load_item_embeddings_and_tags
 # Load data
 train_dataset = Task2Dataset(data_path="/kaggle/input/www2025-mmctr-data/MicroLens_1M_MMCTR/MicroLens_1M_x1/train.parquet", is_train=True)
 valid_dataset = Task2Dataset(data_path="/kaggle/input/www2025-mmctr-data/MicroLens_1M_MMCTR/MicroLens_1M_x1/valid.parquet", is_train=True)
 
-train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True, collate_fn=lambda b: collate_fn_train(b, mask_prob=0.2))
-valid_loader = DataLoader(valid_dataset, batch_size=128, shuffle=False, collate_fn=collate_fn_val)
+train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True, collate_fn=collate_fn)
+valid_loader = DataLoader(valid_dataset, batch_size=128, shuffle=False, collate_fn=collate_fn)
 
 # Create model
 
@@ -412,15 +412,15 @@ model = CTRModelWinning(
     frozen_embeddings=embeddings,
     item_tags=item_tags,
     num_tags=num_tags,
-    embed_dim=32,  
-    tag_embed_dim=16,  
-    k=16,  
-    num_transformer_layers=1,  
+    embed_dim=16,           # Minimal
+    tag_embed_dim=8,        # Minimal
+    k=8,                    # Less context
+    num_transformer_layers=1,
     num_heads=1,
-    num_cross_layers=1,  
-    deep_layers=[256, 128],  
-    dropout=0.4,  
-    learning_rate=5e-4,  
+    num_cross_layers=0,     # Skip entirely
+    deep_layers=[128],      # Single layer only!
+    dropout=0.7,            # Very aggressive
+    learning_rate=1e-4,     # Lower LR
 )
 
 model.fit(train_loader, valid_loader, num_epochs=40, save_path="best_model")
