@@ -56,13 +56,14 @@ class EmbeddingLayer(nn.Module):
         tag_repr = self.tag_emb(tags)  # (..., 5, tag_embed_dim)
         tag_repr = tag_repr.mean(dim=-2)  # (..., tag_embed_dim)
         
+        # Concatenate exactly as winning solution
         final_emb = torch.cat([frozen, learnable, tag_repr], dim=-1)  # (..., final_dim)
         return final_emb
 
 class SequentialLearning(nn.Module):
     """TCN with causal dilated convolutions"""
     
-    def __init__(self, input_dim, k=16, num_channels=[512, 512], kernel_size=3, dropout=0.3):
+    def __init__(self, input_dim, k=16, num_channels=[256, 256], kernel_size=3, dropout=0.3):
         super().__init__()
         self.k = k
         self.input_dim = input_dim
@@ -118,7 +119,7 @@ class DCNv2(nn.Module):
     Deep & Cross Network v2 for feature interaction.
     """
     
-    def __init__(self, input_dim, num_cross_layers=3, deep_layers=None, dropout=0.2):
+    def __init__(self, input_dim, num_cross_layers=2, deep_layers=None, dropout=0.2):
         super().__init__()
         
         if deep_layers is None:
@@ -161,6 +162,7 @@ class DCNv2(nn.Module):
         
         # Concatenate
         return torch.cat([x_cross, x_deep], dim=1)
+
 
 class CTRModelWinning(nn.Module):
     """Exact 1st place solution architecture."""
@@ -402,10 +404,10 @@ model = CTRModelWinning(
     k=16,  # Exact
     num_transformer_layers=2,  # Exact
     num_heads=4,
-    num_cross_layers=3,  # Exact
+    num_cross_layers=2,  # Exact
     deep_layers=[1024, 512, 256],  # Exact
     dropout=0.4,  # Exact
-    learning_rate=5e-4,  # Exact
+    learning_rate=5e-5,  # Exact
 )
 
 # Load saved state
