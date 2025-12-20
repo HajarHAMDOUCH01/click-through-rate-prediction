@@ -214,7 +214,7 @@ class CTRModelWinning(nn.Module):
         self.to(device)
         
         # Optimizer
-        self.optimizer = Adam(self.parameters(), lr=learning_rate, weight_decay=1e-5)
+        self.optimizer = Adam(self.parameters(), lr=learning_rate, weight_decay=1e-3)
         self.scheduler = ReduceLROnPlateau(self.optimizer, mode='max', factor=0.5, patience=3)
         self.criterion = None
         
