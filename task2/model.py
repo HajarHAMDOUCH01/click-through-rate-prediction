@@ -134,10 +134,10 @@ class DCNv2(nn.Module):
             deep_layers = [1024, 512, 256]
         
         # Cross layers
-        # self.cross_layers = nn.ModuleList([
-        #     nn.Linear(input_dim, input_dim, bias=True)
-        #     for _ in range(num_cross_layers)
-        # ])
+        self.cross_layers = nn.ModuleList([
+            nn.Linear(input_dim, input_dim, bias=True)
+            for _ in range(num_cross_layers)
+        ])
         
         # Deep network
         layers = []
@@ -148,9 +148,9 @@ class DCNv2(nn.Module):
             layers.append(nn.Dropout(dropout))
             in_dim = h_dim
         self.deep_net = nn.Sequential(*layers)
-        self.output_dim = deep_layers[-1]
+        # self.output_dim = deep_layers[-1]
         # Output concatenation
-        # self.output_dim = input_dim + deep_layers[-1]
+        self.output_dim = input_dim + deep_layers[-1]
     
     def forward(self, x0):
         """
