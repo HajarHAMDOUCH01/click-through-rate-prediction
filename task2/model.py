@@ -61,7 +61,8 @@ class EmbeddingLayer(nn.Module):
 
 class SequentialLearning(nn.Module):
     """TCN with causal dilated convolutions"""
-    def __init__(self, input_dim, k=16, num_channels=[128, 128], kernel_size=3, dropout=0.4):  # Changed
+    
+    def __init__(self, input_dim, k=16, num_channels=[512, 512], kernel_size=3, dropout=0.3):
         super().__init__()
         self.k = k
         self.input_dim = input_dim
@@ -80,8 +81,7 @@ class SequentialLearning(nn.Module):
             ))
             layers.append(nn.ReLU())
             layers.append(nn.Dropout(dropout))
-            layers.append(nn.BatchNorm1d(out_ch))  
-        
+            layers.append(nn.BatchNorm1d(out_ch))
         self.tcn = nn.Sequential(*layers)
         self.output_dim = k * num_channels[-1] + num_channels[-1]
     
@@ -404,7 +404,7 @@ model = CTRModelWinning(
     num_heads=4,
     num_cross_layers=3,  # Exact
     deep_layers=[1024, 512, 256],  # Exact
-    dropout=0.2,  # Exact
+    dropout=0.4,  # Exact
     learning_rate=5e-4,  # Exact
 )
 
