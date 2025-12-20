@@ -57,69 +57,58 @@ class EmbeddingLayer(nn.Module):
         return final_emb
 
 class SequentialLearning(nn.Module):
-    """
-    Transformer-based sequential learning.
-    Input: sequence of item embeddings concatenated with target embedding
-    Output: latest k items flattened + max pooled features
-    """
+    """TCN with causal dilated convolutions"""
     
-    def __init__(self, item_embed_dim, k=16, num_layers=2, num_heads=4, dropout=0.2):
+    def __init__(self, input_dim, k=16, num_channels=[256, 256], kernel_size=3, dropout=0.2):
         super().__init__()
         self.k = k
-        self.item_embed_dim = item_embed_dim
+        self.input_dim = input_dim
         
-        # Transformer encoder
-        encoder_layer = TransformerEncoderLayer(
-            d_model=item_embed_dim * 2,  # Concatenate item + target
-            nhead=num_heads,
-            dim_feedforward=512,
-            batch_first=True,
-            dropout=dropout,
-            activation='relu'
-        )
-        self.transformer = TransformerEncoder(encoder_layer, num_layers=num_layers)
+        layers = []
+        num_levels = len(num_channels)
+        for i in range(num_levels):
+            dilation = 2 ** i
+            in_ch = input_dim * 2 if i == 0 else num_channels[i-1]
+            out_ch = num_channels[i]
+            
+            layers.append(nn.Conv1d(
+                in_ch, out_ch, kernel_size,
+                padding=(kernel_size-1) * dilation,
+                dilation=dilation
+            ))
+            layers.append(nn.ReLU())
+            layers.append(nn.Dropout(dropout))
         
-        # Output: k items flattened + max pool
-        self.output_dim = k * (item_embed_dim * 2) + (item_embed_dim * 2)
+        self.tcn = nn.Sequential(*layers)
+        self.output_dim = k * num_channels[-1] + num_channels[-1]
     
     def forward(self, item_ids, item_embeds, target_emb):
         batch_size, seq_len = item_ids.shape
         
-        # Concatenate target with each sequence item
+        # Concatenate target with each item
         target_expanded = target_emb.unsqueeze(1).expand(-1, seq_len, -1)
         seq_input = torch.cat([item_embeds, target_expanded], dim=-1)
         
-        # Compute similarity scores
-        sim_scores = F.cosine_similarity(target_emb.unsqueeze(1), item_embeds, dim=-1)  # (B, seq_len)
+        # TCN expects (B, C, L)
+        seq_input = seq_input.transpose(1, 2)  # (B, input_dim*2, seq_len)
         
-        # Create padding mask
+        # Apply TCN
+        output = self.tcn(seq_input)  # (B, num_channels[-1], seq_len)
+        
+        # Remove causal padding
+        output = output[:, :, :seq_len]
+        output = output.transpose(1, 2)  # (B, seq_len, num_channels[-1])
+        
+        # Mask padding
         padding_mask = (item_ids == 0)
+        output_masked = output.clone()
+        output_masked[padding_mask] = float('-inf')
         
-        # items that are either padded OR similar to target
-        sim_mask = (sim_scores > 0.5)  # (B, seq_len)
+        # Latest k items + max pool
+        output_k = output[:, -self.k:, :].reshape(batch_size, -1)
+        output_max = output_masked.max(dim=1)[0]
         
-        # Combine: use padding mask, but weight by similarity
-        weights = torch.where(padding_mask, torch.zeros_like(sim_scores), sim_scores)  # (B, seq_len)
-        weights = weights.unsqueeze(-1)  # (B, seq_len, 1)
-        
-        # Transformer
-        S = self.transformer(seq_input, src_key_padding_mask=padding_mask)  # (B, seq_len, item_embed_dim*2)
-        
-        # Apply similarity weighting to sequence
-        S_weighted = S * weights  # Element-wise multiplication
-        
-        # Latest k items (still fixed output)
-        S_k = S_weighted[:, -self.k:, :].reshape(batch_size, -1)  # (B, k * item_embed_dim * 2)
-        
-        # Max pooling (now considers similarity)
-        S_masked = S_weighted.clone()
-        S_masked[padding_mask] = float('-inf')
-        S_max = S_masked.max(dim=1)[0]  # (B, item_embed_dim*2)
-        
-        # Concatenate
-        S_o = torch.cat([S_k, S_max], dim=1)  # (B, output_dim) 
-        
-        return S_o
+        return torch.cat([output_k, output_max], dim=1)
 
 class DCNv2(nn.Module):
     """
