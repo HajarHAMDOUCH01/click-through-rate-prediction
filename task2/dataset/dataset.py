@@ -18,7 +18,6 @@ class Task2Dataset(Dataset):
         self.data = pl.read_parquet(data_path)
         self.is_train = is_train
         
-        # Check if label column exists (for test vs train/valid)
         self.has_labels = "label" in self.data.columns
         
         if dataset_size_limit is not None:
@@ -32,7 +31,6 @@ class Task2Dataset(Dataset):
         return len(self.data)
     
     def __getitem__(self, idx):
-        # Get the row as a regular Python dict
         row_dict = self.data[idx].to_dict()
         
         item = {
@@ -57,7 +55,6 @@ class Task2Dataset(Dataset):
 def collate_fn(batch):
     """Collate function that handles both labeled and unlabeled data."""
     
-    # Check if batch has labels
     has_labels = "label" in batch[0]
     has_ids = "id" in batch[0]
     

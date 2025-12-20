@@ -34,22 +34,17 @@ def generate_test_predictions(model, test_loader):
     
     with torch.no_grad():
         for batch in tqdm(test_loader, desc='Generating predictions'):
-            # Move batch to device (exclude 'id' and 'labels' if present)
             batch_data = {k: v.to(device) for k, v in batch.items() 
                          if k not in ['id', 'labels']}
             
-            # Get predictions
             logits = model.forward(batch_data)
             probs = torch.sigmoid(logits)
             
-            # Store predictions
             all_preds.extend(probs.cpu().numpy().tolist())
             
-            # Store IDs (if available in batch)
             if 'id' in batch:
                 all_ids.extend(batch['id'].tolist())
             else:
-                # Generate sequential IDs starting from 0
                 start_id = len(all_ids)
                 all_ids.extend(range(start_id, start_id + len(probs)))
     
@@ -88,36 +83,27 @@ if __name__ == "__main__":
     print("TEST PREDICTION SCRIPT")
     print("="*70 + "\n")
     
-    # =========================================================================
-    # 1. LOAD TEST DATASET
-    # =========================================================================
     print("Loading test dataset...")
     test_dataset = Task2Dataset(
         data_path="/kaggle/input/www2025-mmctr-data/MicroLens_1M_MMCTR/MicroLens_1M_x1/test.parquet",
-        is_train=False  # IMPORTANT: Set to False for test data
+        is_train=False  
     )
     
     test_loader = DataLoader(
         test_dataset, 
-        batch_size=256,  # Larger batch size for faster inference
-        shuffle=False,   # Don't shuffle test data
+        batch_size=256,  
+        shuffle=False,   
         collate_fn=collate_fn,
         num_workers=2
     )
     
     print(f"✓ Test dataset loaded: {len(test_dataset):,} samples\n")
     
-    # =========================================================================
-    # 2. LOAD EMBEDDINGS
-    # =========================================================================
     embeddings, item_tags, num_items, num_tags = load_item_embeddings_and_tags(
         item_info_path="/kaggle/working/item_info_with_clip.parquet",
         embedding_source="item_clip_emb_d128"
     )
     
-    # =========================================================================
-    # 3. INITIALIZE MODEL (NO TRAINING)
-    # =========================================================================
     print("\nInitializing model architecture...")
     
     model = CTRModel(
@@ -133,13 +119,10 @@ if __name__ == "__main__":
         num_cross_layers=3,
         deep_layers=[1024, 512, 256],
         dropout=0.2,
-        learning_rate=5e-4,  # This parameter is not used during inference
+        learning_rate=5e-4,  
     )
     
-    # =========================================================================
-    # 4. LOAD TRAINED WEIGHTS
-    # =========================================================================
-    checkpoint_path = "/kaggle/working/model_21.pth"  # Your best model
+    checkpoint_path = "/kaggle/working/model_21.pth"  
     print(f"\nLoading checkpoint: {checkpoint_path}")
     
     checkpoint = torch.load(checkpoint_path, weights_only=False, map_location='cuda')
@@ -149,17 +132,10 @@ if __name__ == "__main__":
     if 'val_auc' in checkpoint:
         print(f"  Validation AUC: {checkpoint['val_auc']:.4f}")
     
-    # Set to evaluation mode
     model.eval()
     
-    # =========================================================================
-    # 5. GENERATE PREDICTIONS
-    # =========================================================================
     predictions, ids = generate_test_predictions(model, test_loader)
     
-    # =========================================================================
-    # 6. SAVE TO CSV
-    # =========================================================================
     output_path = '/kaggle/working/submission.csv'
     save_predictions_to_csv(predictions, ids, output_path)
     
