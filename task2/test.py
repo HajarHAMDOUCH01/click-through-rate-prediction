@@ -85,13 +85,12 @@ print("\n" + "="*80)
 print("GENERATING PREDICTIONS")
 print("="*80 + "\n")
 
-all_ids = []
 all_predictions = []
 
 with torch.no_grad():
     for batch in tqdm(test_loader, desc="Inference"):
         # Move batch to device
-        batch_gpu = {k: v.to(DEVICE) for k, v in batch.items() if k != 'id'}
+        batch_gpu = {k: v.to(DEVICE) for k, v in batch.items() if k not in ['id']}
         
         # Get predictions (logits)
         logits = model.forward(batch_gpu)
@@ -100,12 +99,9 @@ with torch.no_grad():
         probs = torch.sigmoid(logits).cpu().numpy()
         
         # Store results
-        if 'id' in batch:
-            all_ids.extend(batch['id'].numpy())
         all_predictions.extend(probs)
 
 # Convert to arrays
-all_ids = np.array(all_ids)
 all_predictions = np.array(all_predictions)
 
 print(f"\nGenerated {len(all_predictions):,} predictions")
@@ -114,6 +110,22 @@ print(f"Prediction mean: {all_predictions.mean():.6f}, std: {all_predictions.std
 
 # Create submission dataframe
 print("\nCreating submission file...")
+
+# Get IDs from the original test data
+# Check if 'id' column exists in test data
+if "id" in test_dataset.data.columns:
+    all_ids = test_dataset.data["id"].to_numpy()
+    print(f"Using 'id' column from test data")
+else:
+    # If no id column, create sequential IDs starting from 0
+    all_ids = np.arange(len(all_predictions))
+    print(f"No 'id' column found, creating sequential IDs")
+
+print(f"Number of IDs: {len(all_ids):,}")
+print(f"Number of predictions: {len(all_predictions):,}")
+
+# Verify lengths match
+assert len(all_ids) == len(all_predictions), f"Length mismatch: {len(all_ids)} IDs vs {len(all_predictions)} predictions"
 
 # Task 1: Binary prediction (0 or 1)
 # Using 0.5 threshold for binary classification
